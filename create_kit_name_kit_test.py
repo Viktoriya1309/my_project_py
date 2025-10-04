@@ -1,17 +1,8 @@
 import configuration
 import sender_stand_request
 import data
-import requests
 
-def get_new_user_token():
-   
-    response = requests.post(
-        configuration.URL_SERVICE + configuration.CREATE_USER_PATH,
-        json=data.user_body,
-        headers=data.headers
-    )
-    assert response.status_code == 201, f"Ошибка создания пользователя: {response.text}"
-    return response.json().get("authToken")
+sender_stand_request.post_new_user(data.user_body)
 
 def kit_body(name):
     body = data.kit_body.copy()
@@ -19,32 +10,21 @@ def kit_body(name):
     return body
 
 def positive_assert(kit_body):
-   
-    auth_token = get_new_user_token()
+    auth_token = sender_stand_request.get_new_user_token()
     headers_with_auth = data.headers.copy()
     headers_with_auth["Authorization"] = f"Bearer {auth_token}"
 
-    response = requests.post(
-        configuration.URL_SERVICE + configuration.CREATE_KIT_PATH,
-        json=kit_body,
-        headers=headers_with_auth
-    )
+    response = sender_stand_request.post(configuration.CREATE_KIT_PATH, kit_body, headers_with_auth)
 
     assert response.status_code == 201, f"Ожидали 201, получили {response.status_code}: {response.text}"
     assert response.json().get("name") == kit_body["name"], "Имя набора не совпадает"
 
-
 def negative_assert(kit_body):
-    
-    auth_token = get_new_user_token()
+    auth_token = sender_stand_request.get_new_user_token()
     headers_with_auth = data.headers.copy()
     headers_with_auth["Authorization"] = f"Bearer {auth_token}"
 
-    response = requests.post(
-        configuration.URL_SERVICE + configuration.CREATE_KIT_PATH,
-        json=kit_body,
-        headers=headers_with_auth
-    )
+    response = sender_stand_request.post(configuration.CREATE_KIT_PATH, kit_body, headers_with_auth)
 
     assert response.status_code == 400, f"Ожидали 400, получили {response.status_code}: {response.text}"
 
@@ -95,8 +75,7 @@ def test_create_kit_with_name_with_numbers():
 
 #10 test
 def test_create_kit_with_name_no_param():
-    test_kit_body = kit_body() 
-    negative_assert(test_kit_body)
+    negative_assert({})
 
 #11 test
 def test_create_kit_with_name_another_param():

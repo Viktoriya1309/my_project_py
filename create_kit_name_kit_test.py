@@ -2,29 +2,27 @@ import configuration
 import sender_stand_request
 import data
 
-sender_stand_request.post_new_user(data.user_body)
-
 def kit_body(name):
     body = data.kit_body.copy()
     body["name"] = name
     return body
 
 def positive_assert(kit_body):
-    auth_token = sender_stand_request.get_new_user_token()
+    auth_token = sender_stand_request.create_user_and_retrieve_token()
     headers_with_auth = data.headers.copy()
     headers_with_auth["Authorization"] = f"Bearer {auth_token}"
 
-    response = sender_stand_request.post(configuration.CREATE_KIT_PATH, kit_body, headers_with_auth)
+    response = sender_stand_request.create_new_kit(kit_body, headers_with_auth)
 
     assert response.status_code == 201, f"Ожидали 201, получили {response.status_code}: {response.text}"
     assert response.json().get("name") == kit_body["name"], "Имя набора не совпадает"
 
 def negative_assert(kit_body):
-    auth_token = sender_stand_request.get_new_user_token()
+    auth_token = sender_stand_request.create_user_and_retrieve_token()
     headers_with_auth = data.headers.copy()
     headers_with_auth["Authorization"] = f"Bearer {auth_token}"
 
-    response = sender_stand_request.post(configuration.CREATE_KIT_PATH, kit_body, headers_with_auth)
+    response = sender_stand_request.create_new_kit(kit_body, headers_with_auth)
 
     assert response.status_code == 400, f"Ожидали 400, получили {response.status_code}: {response.text}"
 
